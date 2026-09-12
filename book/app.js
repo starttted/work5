@@ -2,24 +2,48 @@ const form = document.querySelector('#book-form');
 const titleInput = document.querySelector('#title-input');
 const authorInput = document.querySelector('#author-input');
 const ratingInput = document.querySelector('#rating-input');
+const submitBtn = document.querySelector('#submit-btn');
+const cancelBtn = document.querySelector('#cancel-btn');
+const searchInput = document.querySelector('#search-input');
 const tip = document.querySelector('#tip');
 const list = document.querySelector('#book-list');
 
 let books = [];
+let editingId = null;
+let keyword = '';
 
 const render = () => {
   list.innerHTML = '';
 
-  if (books.length === 0) {
+  const shown = books.filter(book => {
+    const kw = keyword.trim().toLowerCase();
+    return book.title.toLowerCase().includes(kw) || book.author.toLowerCase().includes(kw);
+  });
+
+  if (shown.length === 0) {
     const li = document.createElement('li');
-    li.textContent = '暂无图书';
+    li.textContent = keyword.trim() === '' ? '暂无图书' : '没有匹配的图书';
     list.appendChild(li);
     return;
   }
 
-  books.forEach(book => {
+  shown.forEach(book => {
     const li = document.createElement('li');
     li.textContent = `${book.title} - ${book.author} - ${book.rating}分`;
+
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.textContent = '编辑';
+    editBtn.className = 'edit';
+    editBtn.addEventListener('click', () => {
+      editingId = book.id;
+      titleInput.value = book.title;
+      authorInput.value = book.author;
+      ratingInput.value = book.rating;
+      submitBtn.textContent = '保存修改';
+      cancelBtn.hidden = false;
+      tip.textContent = '';
+    });
 
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
@@ -27,9 +51,20 @@ const render = () => {
     delBtn.className = 'del';
     delBtn.addEventListener('click', () => {
       books = books.filter(item => item.id !== book.id);
+
+      if (editingId === book.id) {
+        editingId = null;
+        submitBtn.textContent = '添加';
+        cancelBtn.hidden = true;
+        titleInput.value = '';
+        authorInput.value = '';
+        ratingInput.value = '';
+      }
+
       render();
     });
 
+    li.appendChild(editBtn);
     li.appendChild(delBtn);
     list.appendChild(li);
   });
@@ -54,11 +89,42 @@ form.addEventListener('submit', (e) => {
     return;
   }
 
-  books.push({ id: Date.now(), title: title, author: author, rating: rating });
-  tip.textContent = '添加成功';
+  if (editingId !== null) {
+    const book = books.find(item => item.id === editingId);
+
+    if (book) {
+      book.title = title;
+      book.author = author;
+      book.rating = rating;
+    }
+
+    editingId = null;
+    submitBtn.textContent = '添加';
+    cancelBtn.hidden = true;
+    tip.textContent = '修改成功';
+  } else {
+    books.push({ id: Date.now(), title: title, author: author, rating: rating });
+    tip.textContent = '添加成功';
+  }
+
   titleInput.value = '';
   authorInput.value = '';
   ratingInput.value = '';
+  render();
+});
+
+cancelBtn.addEventListener('click', () => {
+  editingId = null;
+  submitBtn.textContent = '添加';
+  cancelBtn.hidden = true;
+  titleInput.value = '';
+  authorInput.value = '';
+  ratingInput.value = '';
+  tip.textContent = '';
+});
+
+searchInput.addEventListener('input', (e) => {
+  keyword = e.target.value;
   render();
 });
 

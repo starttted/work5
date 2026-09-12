@@ -4,8 +4,10 @@ const tip = document.querySelector('#tip');
 const list = document.querySelector('#task-list');
 const filters = document.querySelector('.filters');
 
-let tasks = [];
+let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
 let currentFilter = 'all';
+
+const save = () => localStorage.setItem('tasks', JSON.stringify(tasks));
 
 const render = () => {
   list.innerHTML = '';
@@ -29,6 +31,7 @@ const render = () => {
 
     li.addEventListener('click', () => {
       task.done = !task.done;
+      save();
       render();
     });
 
@@ -47,6 +50,7 @@ form.addEventListener('submit', (e) => {
   }
 
   tasks.push({ text: text, done: false });
+  save();
   tip.textContent = '';
   input.value = '';
   render();

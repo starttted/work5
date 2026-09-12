@@ -8,9 +8,11 @@ const searchInput = document.querySelector('#search-input');
 const tip = document.querySelector('#tip');
 const list = document.querySelector('#book-list');
 
-let books = [];
+let books = JSON.parse(localStorage.getItem('books') || '[]');
 let editingId = null;
 let keyword = '';
+
+const save = () => localStorage.setItem('books', JSON.stringify(books));
 
 const render = () => {
   list.innerHTML = '';
@@ -61,6 +63,7 @@ const render = () => {
         ratingInput.value = '';
       }
 
+      save();
       render();
     });
 
@@ -107,6 +110,7 @@ form.addEventListener('submit', (e) => {
     tip.textContent = '添加成功';
   }
 
+  save();
   titleInput.value = '';
   authorInput.value = '';
   ratingInput.value = '';
